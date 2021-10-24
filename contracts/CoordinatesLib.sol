@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.9 <0.9.0;
 
-library ConvertLib{
+library CoordinatesLib{
     function split(bytes32 source) public pure returns (bytes16 x, bytes16 y) {
         bytes16[2] memory output = [bytes16(0), 0];
         assembly {
@@ -22,5 +22,4 @@ library ConvertLib{
         pure
         returns (bytes32 output)
     {}
-
 }
