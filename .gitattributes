@@ -1,2 +1,3 @@
 test/* linguist-vendored
 migrations/* linguist-vendored
+truffle-config.js linguist-vendored
