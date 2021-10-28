@@ -99,4 +99,21 @@ library CoordinatesLib {
         int256 y = y2 - y1;
         estimatedDistance = sqrt(uint256(x * x + y * y));
     }
+
+    /**
+     * Takes two bytes32 serialized points on a grid and returns distance between them.
+     * @param p1 the first serialized point
+     * @param p2 the second serialized point
+     * @return estimatedDistance between the two points
+     todo: test this function
+     */
+    function distance(bytes32 p1, bytes32 p2)
+        public
+        pure
+        returns (uint256 estimatedDistance)
+    {
+        (int128 x1, int128 y1) = convertToCoordinates(p1);
+        (int128 x2, int128 y2) = convertToCoordinates(p2);
+        return distance(x1, y1, x2, y2);
+    }
 }

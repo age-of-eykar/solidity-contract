@@ -8,19 +8,20 @@ contract Eykar {
 
     enum StructureType {
         None,
-        House,
-        Mansion
+        SettlerCamp,
+        Hamlet,
+        Town
     }
 
     struct Plot {
-        address owner;
+        uint256 owner; // owner is a colony id
         uint256 dateOfOwnership; // when owner will really own it
         StructureType structure;
     }
 
     struct Colony {
         string name;
-        address owner;
+        address owner; // owner is a player
         bytes32 location; // place of power
         uint256 people;
         uint256 food;
@@ -37,10 +38,31 @@ contract Eykar {
     // colonies id per player address
     mapping(address => uint256[]) public coloniesPerPlayer;
 
-    function conquer(bytes32 location) public returns (bool conquered) {
-        if (map[location].owner == address(0)) return false;
+    /**
+     * Allows a player to conquer a new plot
+     * @param colonyId the source colony id
+     * @param location serialized plot location
+     * @return arrivalDate
+     */
+    function conquer(uint256 colonyId, bytes32 location)
+        public
+        returns (uint256 arrivalDate)
+    {
+        Colony memory colony = colonies[colonyId - 1];
+        require(msg.sender == colony.owner);
 
-        map[location] = Plot(msg.sender, block.timestamp, StructureType.None);
-        return true;
+        uint256 distanceLength = CoordinatesLib.distance(
+            colony.location,
+            location
+        );
+        arrivalDate = distanceLength * 8 + block.timestamp;
+
+        require(
+            map[location].owner == 0 ||
+                map[location].dateOfOwnership > arrivalDate
+        );
+
+        // todo: find real colonyId (create it if needed?)
+        map[location] = Plot(colonyId, arrivalDate, StructureType.SettlerCamp);
     }
 }
