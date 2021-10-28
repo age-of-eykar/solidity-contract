@@ -13,8 +13,8 @@ Eykar is a slightly crazy project. It's about creating a completely decentralize
 
 ## To do list
 - [x] Map storage
-- [ ] Coordinates conversion
-- [ ] Distances calculation
+- [x] Coordinates conversion
+- [x] Distances calculation
 - [ ] Building function
 - [ ] Conquer function
 - [ ] Attack function
