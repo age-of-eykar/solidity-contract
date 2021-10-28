@@ -57,7 +57,7 @@ library CoordinatesLib {
      * Takes (x,y) coordinates and returns its bytes32 serialization
      * @param x the value on the x axis
      * @param y the value on the y axis
-     * @return bytes32 serialization
+     * @return output serialized (x,y) coordinates
      */
     function convertFromCoordinates(int128 x, int128 y)
         public
@@ -70,13 +70,13 @@ library CoordinatesLib {
     /**
      * Takes a number and returns its square root.
      * @param x the value to square
-     * @return the square root of the given number
+     * @return output the square root of the given number
      */
-    function sqrt(uint256 x) public pure returns (uint256 y) {
+    function sqrt(uint256 x) public pure returns (uint256 output) {
         uint256 z = (x + 1) / 2;
-        y = x;
-        while (z < y) {
-            y = z;
+        output = x;
+        while (z < output) {
+            output = z;
             z = (x / z + z) / 2;
         }
     }
@@ -87,7 +87,7 @@ library CoordinatesLib {
      * @param y1 the value on the y axis of the first point
      * @param x2 the value on the x axis of the second point
      * @param y2 the value on the y axis of the second point
-     * @return distance between the two points
+     * @return estimatedDistance between the two points
      */
     function distance(
         int128 x1,
