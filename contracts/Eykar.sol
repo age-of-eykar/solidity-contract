@@ -56,6 +56,57 @@ contract Eykar {
         }
     }
 
+    /**
+     * Merges an array of colony into one single colony
+     * @param toMerge colonies to merge
+     * @param amount size of toMerge
+     * @return finalColony the merged colony
+     */
+    function mergeColonies(Colony[] memory toMerge, uint8 amount)
+        private
+        returns (Colony memory finalColony)
+    {
+        uint64 plotsAmount = toMerge[0].plotsAmount;
+        uint256 people = toMerge[0].people;
+        uint256 food = toMerge[0].food;
+        uint256 materials = toMerge[0].materials;
+        uint64 maxPlotsAmount = plotsAmount;
+        finalColony = toMerge[0];
+        for (uint8 i = 1; i < amount; i++) {
+            Colony memory toCompare = toMerge[i];
+            plotsAmount += toCompare.plotsAmount;
+            people += toCompare.people;
+            food += toCompare.food;
+            materials += toCompare.materials;
+            if (toCompare.plotsAmount > maxPlotsAmount) {
+                maxPlotsAmount = toCompare.plotsAmount;
+                finalColony = toCompare;
+            }
+        }
+
+        finalColony.plotsAmount = plotsAmount;
+        finalColony.people = people;
+        finalColony.food = food;
+        finalColony.materials = materials;
+
+        for (uint8 i = 0; i < amount; i++) {
+            Colony memory current = toMerge[i];
+            uint256 arrayPosition = current.redirection;
+            current.redirection = finalColony.redirection;
+            colonies[arrayPosition - 1] = current;
+        }
+    }
+
+    /**
+     * Create and register a new Colony
+     * @param name of the colony
+     * @param owner (player) of the colony
+     * @param location of the place of power
+     * @param people amount of people
+     * @param food amount of food
+     * @param materials amount of materials
+     * @return id of the created colony
+     */
     function createColony(
         string memory name,
         address owner,
@@ -63,7 +114,7 @@ contract Eykar {
         uint256 people,
         uint256 food,
         uint256 materials
-    ) public returns (uint256 id) {
+    ) private returns (uint256 id) {
         id = colonies.length + 1;
         colonies.push(
             Colony({
@@ -151,14 +202,11 @@ contract Eykar {
             location
         );
         require(detectedColoniesSize > 0);
-
-        /*
         map[location] = Plot(
-            mergeColonies(detectedColonies, size).redirection,
+            mergeColonies(detectedColonies, detectedColoniesSize).redirection,
             arrivalDate,
             StructureType.SettlerCamp
         );
-        */
     }
 
     /**
@@ -179,13 +227,18 @@ contract Eykar {
             location
         );
         require(detectedColoniesSize == 0);
-
-        /*
+        uint256 newColonyId = createColony({
+            name: newColonyName,
+            owner: msg.sender,
+            location: location,
+            people: 4,
+            food: 4,
+            materials: 4
+        });
         map[location] = Plot(
-            mergeColonies(detectedColonies, size).redirection,
+            newColonyId,
             arrivalDate,
             StructureType.SettlerCamp
         );
-        */
     }
 }
