@@ -56,15 +56,45 @@ contract Eykar {
         }
     }
 
+    function createColony(
+        string memory name,
+        address owner,
+        bytes32 location,
+        uint256 people,
+        uint256 food,
+        uint256 materials
+    ) public returns (uint256 id) {
+        id = colonies.length + 1;
+        colonies.push(
+            Colony({
+                name: name,
+                owner: owner,
+                location: location,
+                plotsAmount: 0,
+                people: people,
+                food: food,
+                materials: materials,
+                redirection: id
+            })
+        );
+    }
+
     /**
-     * Allows a player to conquer a new plot
+     * Common code between conquer with and without existing colony
      * @param colonyId the source colony id
      * @param location serialized plot location
-     * @return arrivalDate
+     * @return detectedColonies array of detected colonies
+     * @return detectedColoniesSize amount of detected colonies
+     * @return arrivalDate date of arrival
      */
     function conquer(uint256 colonyId, bytes32 location)
-        public
-        returns (uint256 arrivalDate)
+        private
+        view
+        returns (
+            Colony[] memory detectedColonies,
+            uint8 detectedColoniesSize,
+            uint256 arrivalDate
+        )
     {
         Colony memory colony = colonies[colonyId - 1];
         require(msg.sender == colony.owner);
@@ -81,8 +111,8 @@ contract Eykar {
         );
 
         // we can have only 4 surrounding different colonies
-        Colony[] memory detectedColonies = new Colony[](4);
-        uint8 size = 0;
+        detectedColonies = new Colony[](4);
+        detectedColoniesSize = 0;
 
         for (int8 i = -1; i <= 1; i++)
             for (int8 j = -1; j <= 1 && !(i == j && i == 0); j++) {
@@ -93,15 +123,69 @@ contract Eykar {
                 // Insert colonies to detectedColonies so it doesn't contain duplicate value
                 bool found = false;
                 Colony memory foundColony = getColony(plot.owner);
-                for (uint8 k = 0; found == false && k < size; k++)
+                if (foundColony.owner != msg.sender) continue;
+                for (uint8 k = 0; !found && k < detectedColoniesSize; k++)
                     if (
                         detectedColonies[k].redirection ==
                         foundColony.redirection
                     ) found = true;
-                if (!found) detectedColonies[size++] = foundColony;
+                if (!found)
+                    detectedColonies[detectedColoniesSize++] = foundColony;
             }
+    }
 
-        // todo: find real colonyId (create it if needed?)
-        map[location] = Plot(colonyId, arrivalDate, StructureType.SettlerCamp);
+    /**
+     * Allows a player to conquer a new plot next to an existing colony
+     * @param colonyId the source colony id
+     * @param location serialized plot location
+     * @return arrivalDate
+     */
+    function conquerWithExistingColony(uint256 colonyId, bytes32 location)
+        public
+        returns (uint256 arrivalDate)
+    {
+        Colony[] memory detectedColonies;
+        uint8 detectedColoniesSize;
+        (detectedColonies, detectedColoniesSize, arrivalDate) = conquer(
+            colonyId,
+            location
+        );
+        require(detectedColoniesSize > 0);
+
+        /*
+        map[location] = Plot(
+            mergeColonies(detectedColonies, size).redirection,
+            arrivalDate,
+            StructureType.SettlerCamp
+        );
+        */
+    }
+
+    /**
+     * Allows a player to conquer a new plot that is not next to an existing owned colony
+     * @param colonyId the source colony id
+     * @param location serialized plot location
+     * @return arrivalDate
+     */
+    function conquerWithoutExistingColony(
+        uint256 colonyId,
+        bytes32 location,
+        string memory newColonyName
+    ) public returns (uint256 arrivalDate) {
+        Colony[] memory detectedColonies;
+        uint8 detectedColoniesSize;
+        (detectedColonies, detectedColoniesSize, arrivalDate) = conquer(
+            colonyId,
+            location
+        );
+        require(detectedColoniesSize == 0);
+
+        /*
+        map[location] = Plot(
+            mergeColonies(detectedColonies, size).redirection,
+            arrivalDate,
+            StructureType.SettlerCamp
+        );
+        */
     }
 }
