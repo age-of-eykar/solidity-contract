@@ -4,7 +4,11 @@ pragma solidity >=0.8.9 <0.9.0;
 import "./CoordinatesLib.sol";
 
 contract Eykar {
-    constructor() {}
+    address payable public owner;
+
+    constructor() payable {
+        owner = payable(msg.sender);
+    }
 
     enum StructureType {
         None,
@@ -38,6 +42,13 @@ contract Eykar {
 
     // colonies id per player address
     mapping(address => uint256[]) public coloniesPerPlayer;
+
+    /**
+     * Withdraws all the balance
+     */
+    function withdraw() public {
+        owner.call{value: address(this).balance}("");
+    }
 
     /**
      * Returns the colony struct for the given colony id
