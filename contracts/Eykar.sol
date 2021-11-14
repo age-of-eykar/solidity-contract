@@ -43,11 +43,14 @@ contract Eykar {
     // colonies id per player address
     mapping(address => uint256[]) public coloniesPerPlayer;
 
+    function register() public payable {}
+
     /**
      * Withdraws all the balance
      */
     function withdraw() public {
-        owner.call{value: address(this).balance}("");
+        (bool success, ) = owner.call{value: address(this).balance}("");
+        require(success, "Failed to send Ether");
     }
 
     /**
@@ -111,7 +114,7 @@ contract Eykar {
     /**
      * Create and register a new Colony
      * @param name of the colony
-     * @param owner (player) of the colony
+     * @param colonyOwner (player) of the colony
      * @param location of the place of power
      * @param people amount of people
      * @param food amount of food
@@ -120,7 +123,7 @@ contract Eykar {
      */
     function createColony(
         string memory name,
-        address owner,
+        address colonyOwner,
         bytes32 location,
         uint256 people,
         uint256 food,
@@ -130,7 +133,7 @@ contract Eykar {
         colonies.push(
             Colony({
                 name: name,
-                owner: owner,
+                owner: colonyOwner,
                 location: location,
                 plotsAmount: 0,
                 people: people,
@@ -240,7 +243,7 @@ contract Eykar {
         require(detectedColoniesSize == 0);
         uint256 newColonyId = createColony({
             name: newColonyName,
-            owner: msg.sender,
+            colonyOwner: msg.sender,
             location: location,
             people: 4,
             food: 4,
