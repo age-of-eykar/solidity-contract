@@ -43,7 +43,54 @@ contract Eykar {
     // colonies id per player address
     mapping(address => uint256[]) public coloniesPerPlayer;
 
-    function register() public payable {}
+    // last input to the spiral function called on register
+    uint128 lastRegistrationId = 0;
+
+    /**
+     * Returns the next available plot location on the map.
+     * @warning This updates the lastRegistrationId
+     * @param spacing between plots
+     */
+    function findNextLocationOnSpiral(int128 spacing)
+        public
+        returns (bytes32 location)
+    {
+        do {
+            lastRegistrationId += 1;
+            uint128 sqrt = uint128(CoordinatesLib.sqrt(lastRegistrationId));
+            if (sqrt > 0 && sqrt % 2 == 0) {
+                sqrt -= 1;
+            }
+            uint128 position_id = lastRegistrationId - sqrt * sqrt;
+            sqrt += 1;
+            uint128 circle_id = sqrt / 2;
+            uint128 side = position_id / sqrt;
+            uint128 position = position_id % sqrt;
+            location = CoordinatesLib.convertFromCoordinates(
+                spacing *
+                    ([int128(1), int128(1), int128(-1), int128(-1)][side] *
+                        int128(circle_id) +
+                        [int128(0), int128(-1), int128(0), int128(1)][side] *
+                        int128(position)),
+                spacing *
+                    ([int128(1), int128(-1), int128(-1), int128(1)][side] *
+                        int128(circle_id) +
+                        [int128(-1), int128(0), int128(1), int128(0)][side] *
+                        int128(position))
+            );
+        } while (
+            map[location].owner != 0 &&
+                map[location].dateOfOwnership <= block.timestamp
+        );
+    }
+
+    /**
+     * Registers a player to the game (creates its first colony)
+     * @param name of the colony
+     */
+    function register(string memory name) public payable {
+        createColony(name, msg.sender, findNextLocationOnSpiral(64), 4, 8, 16);
+    }
 
     /**
      * Withdraws all the balance
