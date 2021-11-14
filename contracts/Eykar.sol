@@ -190,6 +190,7 @@ contract Eykar {
                 redirection: id
             })
         );
+        coloniesPerPlayer[colonyOwner].push(id);
     }
 
     /**
