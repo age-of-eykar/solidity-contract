@@ -50,6 +50,7 @@ contract Eykar {
      * Returns the next available plot location on the map.
      * @warning This updates the lastRegistrationId
      * @param spacing between plots
+     * @return location of the next available plot
      */
     function findNextLocationOnSpiral(int128 spacing)
         public
