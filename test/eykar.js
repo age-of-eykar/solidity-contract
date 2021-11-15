@@ -1,13 +1,18 @@
 const Eykar = artifacts.require('Eykar');
+const CoordinatesLib = artifacts.require('CoordinatesLib');
 
 contract('Eykar', (accounts) => {
-    /*
-    it('should conquer only one plot', async () => {
+
+    it('should convert an id to a location on the spawn spiral', async () => {
+        const coordinatesLib = await CoordinatesLib.deployed();
         const instance = await Eykar.deployed();
-        const conquered = await instance.conquer('0x0123456789012345012345678901234500000000000000000000000000000000');
-        assert(conquered, true);
-        const reconquered = await instance.conquer('0x0123456789012345012345678901234500000000000000000000000000000000');
-        assert(reconquered, false);
+
+        for (let i = 0; i < 10; i++) {
+            const result = await instance.findNextLocationOnSpiral(i, 3);
+            const deserialized = await coordinatesLib.convertToCoordinates(result.location);
+            assert.equal(deserialized.x.toNumber(), [0, 3, 3, 3, 0, -3, -3, -3, 0, 6][i]);
+            assert.equal(deserialized.y.toNumber(), [0, 3, 0, -3, -3, -3, 0, 3, 3, 6][i]);
+        }
     });
-    */
+
 })

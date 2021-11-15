@@ -43,30 +43,25 @@ contract Eykar {
     // colonies id per player address
     mapping(address => uint256[]) public coloniesPerPlayer;
 
-    // last input to the spiral function called on register
-    uint128 lastRegistrationId = 0;
-
     /**
-     * Returns the next available plot location on the map.
-     * @warning This updates the lastRegistrationId
+     * Returns the next available plot location on the map and updates the lastRegistrationId
      * @param spacing between plots
      * @return location of the next available plot
      */
-    function findNextLocationOnSpiral(int128 spacing)
-        public
-        returns (bytes32 location)
-    {
+    function findNextLocationOnSpiral(
+        uint128 currentRegistrationId,
+        int128 spacing
+    ) public view returns (bytes32 location, uint128 newRegistrationId) {
         do {
-            lastRegistrationId += 1;
-            uint128 sqrt = uint128(CoordinatesLib.sqrt(lastRegistrationId));
-            if (sqrt > 0 && sqrt % 2 == 0) {
-                sqrt -= 1;
-            }
-            uint128 position_id = lastRegistrationId - sqrt * sqrt;
+            uint128 sqrt = uint128(CoordinatesLib.sqrt(currentRegistrationId));
+            if (sqrt > 0 && sqrt % 2 == 0) sqrt -= 1;
+
+            uint128 position_id = currentRegistrationId - sqrt * sqrt;
             sqrt += 1;
             uint128 circle_id = sqrt / 2;
             uint128 side = position_id / sqrt;
             uint128 position = position_id % sqrt;
+
             location = CoordinatesLib.convertFromCoordinates(
                 spacing *
                     ([int128(1), int128(1), int128(-1), int128(-1)][side] *
@@ -79,18 +74,27 @@ contract Eykar {
                         [int128(-1), int128(0), int128(1), int128(0)][side] *
                         int128(position))
             );
+            newRegistrationId = currentRegistrationId + 1;
         } while (
             map[location].owner != 0 &&
                 map[location].dateOfOwnership <= block.timestamp
         );
     }
 
+    // next input to the spiral function called on register
+    uint128 registrationId;
+
     /**
      * Registers a player to the game (creates its first colony)
      * @param name of the colony
      */
     function register(string memory name) public payable {
-        createColony(name, msg.sender, findNextLocationOnSpiral(64), 4, 8, 16);
+        (
+            bytes32 location,
+            uint128 newRegistrationId
+        ) = findNextLocationOnSpiral(registrationId, 64);
+        registrationId = newRegistrationId;
+        createColony(name, msg.sender, location, 4, 8, 16);
     }
 
     /**
