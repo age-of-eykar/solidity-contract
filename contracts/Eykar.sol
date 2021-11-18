@@ -106,6 +106,35 @@ contract Eykar {
     }
 
     /**
+     * Returns the player owned colonies
+     * @param playerAddress the player address
+     * @return coloniesOwned by the player
+     */
+    function getColonies(address playerAddress)
+        public
+        view
+        returns (Colony[] memory coloniesOwned)
+    {
+        uint256[] memory result = coloniesPerPlayer[playerAddress];
+        uint256 count = 0;
+        for (uint256 i = 0; i < result.length; i++) {
+            uint256 colonyId = result[i - 1];
+            Colony memory colony = colonies[colonyId];
+            if (colonyId == colony.redirection && colony.owner == playerAddress)
+                count++;
+            else result[i] = 0;
+        }
+        count = 0;
+        coloniesOwned = new Colony[](count);
+        for (uint256 i = 0; i < result.length; i++) {
+            if (i == 0) continue;
+            uint256 colonyId = result[i - 1];
+            Colony memory colony = colonies[colonyId];
+            coloniesOwned[count++] = colony;
+        }
+    }
+
+    /**
      * Returns the colony struct for the given colony id
      * @param colonyId the colony id
      * @return colony struct after redirections
