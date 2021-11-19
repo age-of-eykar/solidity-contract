@@ -86,13 +86,16 @@ contract Eykar {
 
     /**
      * Registers a player to the game (creates its first colony)
+     * costs 10 ether
      * @param name of the colony
      */
     function register(string memory name) public payable {
+        require(msg.value >= 10 ether);
         (
             bytes32 location,
             uint128 newRegistrationId
         ) = findNextLocationOnSpiral(registrationId, 64);
+
         registrationId = newRegistrationId;
         createColony(name, msg.sender, location, 4, 8, 16);
     }
