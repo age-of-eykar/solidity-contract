@@ -17,7 +17,6 @@ contract('Eykar', (accounts) => {
 
     it('should register a player and create its colonies', async () => {
         const instance = await Eykar.deployed();
-        console.log();
 
         // register for 10 ethers (10000000000000000000 wei)
         await instance.register("First player", { value: 10000000000000000000, from: accounts[0] });
@@ -25,7 +24,8 @@ contract('Eykar', (accounts) => {
         assert.equal(colonies.length, 1);
         assert.equal(colonies[0].name, "First player");
         assert.equal(colonies[0].owner, accounts[0]);
-        assert.equal(colonies[0].location, '0x0000000000000000000000000000000000000000000000000000000000000000');
+        assert.equal(colonies[0].location,
+            '0x0000000000000000000000000000000000000000000000000000000000000000');
         assert.equal(colonies[0].plotsAmount, 0);
         assert.equal(colonies[0].people, 4);
         assert.equal(colonies[0].food, 8);
