@@ -15,13 +15,22 @@ contract('Eykar', (accounts) => {
         }
     });
 
-    it('should create and read colonies', async () => {
-        const coordinatesLib = await CoordinatesLib.deployed();
+    it('should register a player and create its colonies', async () => {
         const instance = await Eykar.deployed();
+        console.log();
 
-        await instance.register("First player", { from: accounts[0] });
-        const colonies = await instance.getColonies.call(accounts[0]);
-        console.log(colonies);
+        // register for 10 ethers (10000000000000000000 wei)
+        await instance.register("First player", { value: 10000000000000000000, from: accounts[0] });
+        const colonies = await instance.getColonies(accounts[0]);
+        assert.equal(colonies.length, 1);
+        assert.equal(colonies[0].name, "First player");
+        assert.equal(colonies[0].owner, accounts[0]);
+        assert.equal(colonies[0].location, '0x0000000000000000000000000000000000000000000000000000000000000000');
+        assert.equal(colonies[0].plotsAmount, 0);
+        assert.equal(colonies[0].people, 4);
+        assert.equal(colonies[0].food, 8);
+        assert.equal(colonies[0].materials, 16);
+        assert.equal(colonies[0].redirection, 1);
     });
 
 })
