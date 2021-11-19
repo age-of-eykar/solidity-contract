@@ -118,19 +118,18 @@ contract Eykar {
         uint256[] memory result = coloniesPerPlayer[playerAddress];
         uint256 count = 0;
         for (uint256 i = 0; i < result.length; i++) {
-            uint256 colonyId = result[i - 1];
-            Colony memory colony = colonies[colonyId];
+            uint256 colonyId = result[i];
+            Colony memory colony = colonies[colonyId - 1];
             if (colonyId == colony.redirection && colony.owner == playerAddress)
                 count++;
-            else result[i] = 0;
         }
-        count = 0;
         coloniesOwned = new Colony[](count);
+        count = 0;
         for (uint256 i = 0; i < result.length; i++) {
-            if (i == 0) continue;
-            uint256 colonyId = result[i - 1];
-            Colony memory colony = colonies[colonyId];
-            coloniesOwned[count++] = colony;
+            uint256 colonyId = result[i];
+            Colony memory colony = colonies[colonyId - 1];
+            if (colonyId == colony.redirection && colony.owner == playerAddress)
+                coloniesOwned[count++] = colony;
         }
     }
 
@@ -223,6 +222,13 @@ contract Eykar {
                 redirection: id
             })
         );
+
+        map[location] = Plot({
+            owner: id,
+            dateOfOwnership: block.timestamp,
+            structure: StructureType.SettlerCamp
+        });
+
         coloniesPerPlayer[colonyOwner].push(id);
     }
 

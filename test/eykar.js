@@ -15,4 +15,13 @@ contract('Eykar', (accounts) => {
         }
     });
 
+    it('should create and read colonies', async () => {
+        const coordinatesLib = await CoordinatesLib.deployed();
+        const instance = await Eykar.deployed();
+
+        await instance.register("First player", { from: accounts[0] });
+        const colonies = await instance.getColonies.call(accounts[0]);
+        console.log(colonies);
+    });
+
 })
