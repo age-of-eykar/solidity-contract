@@ -26,11 +26,19 @@ contract('Eykar', (accounts) => {
         assert.equal(colonies[0].owner, accounts[0]);
         assert.equal(colonies[0].location,
             '0x0000000000000000000000000000000000000000000000000000000000000000');
-        assert.equal(colonies[0].plotsAmount, 0);
+        assert.equal(colonies[0].plotsAmount, 1);
         assert.equal(colonies[0].people, 4);
         assert.equal(colonies[0].food, 8);
         assert.equal(colonies[0].materials, 16);
         assert.equal(colonies[0].redirection, 1);
+    });
+
+    it('should get plots', async () => {
+        const instance = await Eykar.deployed();
+
+        // get plots on a chunk of 8 plots
+        const response = await instance.getPlots(0, 0, 7, 7);
+        assert.equal(response.plots.length, 1);
     });
 
 })

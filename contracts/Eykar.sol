@@ -44,6 +44,64 @@ contract Eykar {
     mapping(address => uint256[]) public coloniesPerPlayer;
 
     /**
+     * Returns a specific Plot object
+     * @param x coordinate on the x axis
+     * @param y coordinate on the y axis
+     * @return plot object at this location
+     */
+    function getPlot(int128 x, int128 y) public view returns (Plot memory) {
+        return map[CoordinatesLib.convertFromCoordinates(x, y)];
+    }
+
+    /**
+     * Returns an array of Plots found on a specific area
+     * @param startX coordinate on the x axis of the top left point
+     * @param startY coordinate on the y axis of the top left point
+     * @param endX coordinate on the x axis of the bottom right point
+     * @param endY coordinate on the y axis of the top right point
+     * @return plots an array of plot object on this area
+     * @return xArray array of point x
+     * @return yArray array of point
+     */
+    function getPlots(
+        int128 startX,
+        int128 startY,
+        int128 endX,
+        int128 endY
+    )
+        public
+        view
+        returns (
+            Plot[] memory plots,
+            int128[] memory xArray,
+            int128[] memory yArray
+        )
+    {
+        uint128 width = uint128(endX - startX);
+        uint128 height = uint128(endY - startY);
+        Plot[] memory tempOutput = new Plot[](width * height + 1);
+        int128[] memory tempxArray = new int128[](width * height + 1);
+        int128[] memory tempyArray = new int128[](width * height + 1);
+        uint256 i = 0;
+        for (int128 x = startX; x <= endX; x++)
+            for (int128 y = startY; y <= endY; y++) {
+                Plot memory plot = getPlot(x, y);
+                if (plot.structure != StructureType.None) {
+                    tempOutput[i++] = plot;
+                }
+            }
+        plots = new Plot[](i);
+        xArray = new int128[](i);
+        yArray = new int128[](i);
+        while (i > 0) {
+            i--;
+            plots[i] = tempOutput[i];
+            xArray[i] = tempxArray[i];
+            yArray[i] = tempyArray[i];
+        }
+    }
+
+    /**
      * Returns the next available plot location on the map and updates the lastRegistrationId
      * @param spacing between plots
      * @return location of the next available plot
@@ -218,7 +276,7 @@ contract Eykar {
                 name: name,
                 owner: colonyOwner,
                 location: location,
-                plotsAmount: 0,
+                plotsAmount: 1,
                 people: people,
                 food: food,
                 materials: materials,
