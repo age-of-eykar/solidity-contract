@@ -68,6 +68,18 @@ library CoordinatesLib {
     }
 
     /**
+     * Convert cell coordinates to chunk coordinates
+     * @param input cell coordinates
+     * @return output serialized chunk coordinates
+     */
+    function getChunk(bytes32 input) public pure returns (bytes32 output) {
+        int128 x;
+        int128 y;
+        (x, y) = convertToCoordinates(input);
+        output = convertFromCoordinates(x / 8, y / 8);
+    }
+
+    /**
      * Takes a number and returns its square root.
      * @param x the value to square
      * @return output the square root of the given number

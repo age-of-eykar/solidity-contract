@@ -37,8 +37,13 @@ contract('Eykar', (accounts) => {
         const instance = await Eykar.deployed();
 
         // get plots on a chunk of 8 plots
-        const response = await instance.getPlots(0, 0, 7, 7);
+        const response = await instance.getPlots(0, 0);
         assert.equal(response.plots.length, 1);
+
+        for (let i = 1; i <= 64; i++) {
+            const response = await instance.getPlots(i, i);
+            assert.equal(response.plots.length, 0);
+        }
     });
 
 })

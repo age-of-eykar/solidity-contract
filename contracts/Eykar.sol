@@ -37,11 +37,25 @@ contract Eykar {
     // all redeemed plots on the map
     mapping(bytes32 => Plot) public map;
 
+    // map of non empty chunks for efficient queries
+    mapping(bytes32 => bool) public chunks;
+
     // registered colonies
     Colony[] public colonies;
 
     // colonies id per player address
     mapping(address => uint256[]) public coloniesPerPlayer;
+
+    /**
+     * Places a Plot on the map
+     * @param location of the plot
+     * @param plot to place
+     */
+    function setPlot(bytes32 location, Plot memory plot) private {
+        map[location] = plot;
+        bytes32 chunkLocation = CoordinatesLib.getChunk(location);
+        if (!chunks[chunkLocation]) chunks[chunkLocation] = true;
+    }
 
     /**
      * Returns a specific Plot object
@@ -54,21 +68,14 @@ contract Eykar {
     }
 
     /**
-     * Returns an array of Plots found on a specific area
-     * @param startX coordinate on the x axis of the top left point
-     * @param startY coordinate on the y axis of the top left point
-     * @param endX coordinate on the x axis of the bottom right point
-     * @param endY coordinate on the y axis of the top right point
+     * Returns an array of Plots found on a specific chunk
+     * @param xChunk coordinate on the x axis of the chunk
+     * @param yChunk coordinate on the y axis of the chunk
      * @return plots an array of plot object on this area
      * @return xArray array of point x
      * @return yArray array of point
      */
-    function getPlots(
-        int128 startX,
-        int128 startY,
-        int128 endX,
-        int128 endY
-    )
+    function getPlots(int128 xChunk, int128 yChunk)
         public
         view
         returns (
@@ -77,27 +84,35 @@ contract Eykar {
             int128[] memory yArray
         )
     {
-        uint128 width = uint128(endX - startX);
-        uint128 height = uint128(endY - startY);
-        Plot[] memory tempOutput = new Plot[](width * height + 1);
-        int128[] memory tempxArray = new int128[](width * height + 1);
-        int128[] memory tempyArray = new int128[](width * height + 1);
         uint256 i = 0;
-        for (int128 x = startX; x <= endX; x++)
-            for (int128 y = startY; y <= endY; y++) {
-                Plot memory plot = getPlot(x, y);
-                if (plot.structure != StructureType.None) {
-                    tempOutput[i++] = plot;
+        if (chunks[CoordinatesLib.convertFromCoordinates(xChunk, yChunk)]) {
+            Plot[] memory tempOutput = new Plot[](64);
+            int128[] memory tempxArray = new int128[](64);
+            int128[] memory tempyArray = new int128[](64);
+
+            for (int128 x = xChunk * 8; x < (xChunk + 1) * 8; x++)
+                for (int128 y = yChunk * 8; y < (yChunk + 1) * 8; y++) {
+                    Plot memory plot = getPlot(x, y);
+                    if (plot.structure != StructureType.None) {
+                        tempOutput[i] = plot;
+                        tempxArray[i] = x;
+                        tempyArray[i] = y;
+                        i++;
+                    }
                 }
+            plots = new Plot[](i);
+            xArray = new int128[](i);
+            yArray = new int128[](i);
+            while (i > 0) {
+                i--;
+                plots[i] = tempOutput[i];
+                xArray[i] = tempxArray[i];
+                yArray[i] = tempyArray[i];
             }
-        plots = new Plot[](i);
-        xArray = new int128[](i);
-        yArray = new int128[](i);
-        while (i > 0) {
-            i--;
-            plots[i] = tempOutput[i];
-            xArray[i] = tempxArray[i];
-            yArray[i] = tempyArray[i];
+        } else {
+            plots = new Plot[](i);
+            xArray = new int128[](i);
+            yArray = new int128[](i);
         }
     }
 
@@ -283,13 +298,14 @@ contract Eykar {
                 redirection: id
             })
         );
-
-        map[location] = Plot({
-            owner: id,
-            dateOfOwnership: block.timestamp,
-            structure: StructureType.SettlerCamp
-        });
-
+        setPlot(
+            location,
+            Plot({
+                owner: id,
+                dateOfOwnership: block.timestamp,
+                structure: StructureType.SettlerCamp
+            })
+        );
         coloniesPerPlayer[colonyOwner].push(id);
     }
 
@@ -365,10 +381,14 @@ contract Eykar {
             location
         );
         require(detectedColoniesSize > 0);
-        map[location] = Plot(
-            mergeColonies(detectedColonies, detectedColoniesSize).redirection,
-            arrivalDate,
-            StructureType.SettlerCamp
+        setPlot(
+            location,
+            Plot(
+                mergeColonies(detectedColonies, detectedColoniesSize)
+                    .redirection,
+                arrivalDate,
+                StructureType.SettlerCamp
+            )
         );
     }
 
@@ -398,10 +418,9 @@ contract Eykar {
             food: 4,
             materials: 4
         });
-        map[location] = Plot(
-            newColonyId,
-            arrivalDate,
-            StructureType.SettlerCamp
+        setPlot(
+            location,
+            Plot(newColonyId, arrivalDate, StructureType.SettlerCamp)
         );
     }
 }
