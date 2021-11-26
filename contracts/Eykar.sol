@@ -34,6 +34,18 @@ contract Eykar {
         uint256 redirection; // id should be your own if there is no redirection
     }
 
+    struct WrappedColony {
+        string name;
+        address owner; // owner is a player
+        int128 xLocation; // place of power
+        int128 yLocation; // place of power
+        uint64 plotsAmount;
+        uint256 people;
+        uint256 food;
+        uint256 materials;
+        uint256 id;
+    }
+
     // all redeemed plots on the map
     mapping(bytes32 => Plot) public map;
 
@@ -45,6 +57,33 @@ contract Eykar {
 
     // colonies id per player address
     mapping(address => uint256[]) public coloniesPerPlayer;
+
+    /**
+     * Returns a colony with readable location and id
+     * @param colony to wrap
+     * @return wrapped colony
+     */
+    function wrapColony(Colony memory colony)
+        public
+        view
+        returns (WrappedColony memory)
+    {
+        int128 x;
+        int128 y;
+        (x, y) = CoordinatesLib.convertToCoordinates(colony.location);
+        return
+            WrappedColony({
+                name: colony.name,
+                owner: colony.owner,
+                xLocation: x,
+                yLocation: y,
+                plotsAmount: colony.plotsAmount,
+                people: colony.people,
+                food: colony.food,
+                materials: colony.materials,
+                id: getColony(colony.redirection).redirection
+            });
+    }
 
     /**
      * Places a Plot on the map
