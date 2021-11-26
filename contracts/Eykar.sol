@@ -228,7 +228,7 @@ contract Eykar {
     function getColonies(address playerAddress)
         public
         view
-        returns (Colony[] memory coloniesOwned)
+        returns (WrappedColony[] memory coloniesOwned)
     {
         uint256[] memory result = coloniesPerPlayer[playerAddress];
         uint256 count = 0;
@@ -238,13 +238,13 @@ contract Eykar {
             if (colonyId == colony.redirection && colony.owner == playerAddress)
                 count++;
         }
-        coloniesOwned = new Colony[](count);
+        coloniesOwned = new WrappedColony[](count);
         count = 0;
         for (uint256 i = 0; i < result.length; i++) {
             uint256 colonyId = result[i];
             Colony memory colony = colonies[colonyId - 1];
             if (colonyId == colony.redirection && colony.owner == playerAddress)
-                coloniesOwned[count++] = colony;
+                coloniesOwned[count++] = wrapColony(colony);
         }
     }
 
