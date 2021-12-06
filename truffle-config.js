@@ -18,10 +18,9 @@
  *
  */
 
-// const HDWalletProvider = require('@truffle/hdwallet-provider');
-//
-// const fs = require('fs');
-// const mnemonic = fs.readFileSync(".secret").toString().trim();
+const HDWalletProvider = require('@truffle/hdwallet-provider');
+const fs = require('fs');
+const mnemonic = fs.readFileSync(".secret").toString().trim();
 
 module.exports = {
   /**
@@ -45,7 +44,12 @@ module.exports = {
       host: "127.0.0.1",
       port: 7545,
       network_id: "*"
-    }
+    },
+    cronos: {
+      provider: new HDWalletProvider(mnemonic, "https://cronos-testnet-3.crypto.org:8545"), 
+      network_id: "338",
+      skipDryRun: true
+    },
     // Another network with more advanced options...
     // advanced: {
     // port: 8777,             // Custom port
