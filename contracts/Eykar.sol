@@ -49,9 +49,6 @@ contract Eykar {
     // all redeemed plots on the map
     mapping(bytes32 => Plot) public map;
 
-    // map of non empty chunks for efficient queries
-    mapping(bytes32 => bool) public chunks;
-
     // registered colonies
     Colony[] public colonies;
 
@@ -96,7 +93,6 @@ contract Eykar {
     function setPlot(bytes32 location, Plot memory plot) private {
         map[location] = plot;
         bytes32 chunkLocation = CoordinatesLib.getChunk(location);
-        if (!chunks[chunkLocation]) chunks[chunkLocation] = true;
         emit PlotChange(location, plot);
     }
 
@@ -128,34 +124,28 @@ contract Eykar {
         )
     {
         uint256 i = 0;
-        if (chunks[CoordinatesLib.convertFromCoordinates(xChunk, yChunk)]) {
-            Plot[] memory tempOutput = new Plot[](64);
-            int128[] memory tempxArray = new int128[](64);
-            int128[] memory tempyArray = new int128[](64);
+        Plot[] memory tempOutput = new Plot[](64);
+        int128[] memory tempxArray = new int128[](64);
+        int128[] memory tempyArray = new int128[](64);
 
-            for (int128 x = xChunk * 8; x < (xChunk + 1) * 8; x++)
-                for (int128 y = yChunk * 8; y < (yChunk + 1) * 8; y++) {
-                    Plot memory plot = getPlot(x, y);
-                    if (plot.structure != StructureType.None) {
-                        tempOutput[i] = plot;
-                        tempxArray[i] = x;
-                        tempyArray[i] = y;
-                        i++;
-                    }
+        for (int128 x = xChunk * 8; x < (xChunk + 1) * 8; x++)
+            for (int128 y = yChunk * 8; y < (yChunk + 1) * 8; y++) {
+                Plot memory plot = getPlot(x, y);
+                if (plot.structure != StructureType.None) {
+                    tempOutput[i] = plot;
+                    tempxArray[i] = x;
+                    tempyArray[i] = y;
+                    i++;
                 }
-            plots = new Plot[](i);
-            xArray = new int128[](i);
-            yArray = new int128[](i);
-            while (i > 0) {
-                i--;
-                plots[i] = tempOutput[i];
-                xArray[i] = tempxArray[i];
-                yArray[i] = tempyArray[i];
             }
-        } else {
-            plots = new Plot[](i);
-            xArray = new int128[](i);
-            yArray = new int128[](i);
+        plots = new Plot[](i);
+        xArray = new int128[](i);
+        yArray = new int128[](i);
+        while (i > 0) {
+            i--;
+            plots[i] = tempOutput[i];
+            xArray[i] = tempxArray[i];
+            yArray[i] = tempyArray[i];
         }
     }
 
