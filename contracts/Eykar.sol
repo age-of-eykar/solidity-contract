@@ -92,7 +92,6 @@ contract Eykar {
      */
     function setPlot(bytes32 location, Plot memory plot) private {
         map[location] = plot;
-        bytes32 chunkLocation = CoordinatesLib.getChunk(location);
         emit PlotChange(location, plot);
     }
 

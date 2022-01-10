@@ -24,13 +24,13 @@ contract('Eykar', (accounts) => {
         assert.equal(colonies.length, 1);
         assert.equal(colonies[0].name, "First player");
         assert.equal(colonies[0].owner, accounts[0]);
-        assert.equal(colonies[0].location,
-            '0x0000000000000000000000000000000000000000000000000000000000000000');
+        assert.equal(colonies[0].xLocation, 0);
+        assert.equal(colonies[0].yLocation, 0);
         assert.equal(colonies[0].plotsAmount, 1);
         assert.equal(colonies[0].people, 4);
         assert.equal(colonies[0].food, 8);
         assert.equal(colonies[0].materials, 16);
-        assert.equal(colonies[0].redirection, 1);
+        assert.equal(colonies[0].id, 1);
     });
 
     it('should get plots', async () => {
