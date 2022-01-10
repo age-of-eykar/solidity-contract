@@ -58,6 +58,9 @@ contract Eykar {
     // colonies id per player address
     mapping(address => uint256[]) public coloniesPerPlayer;
 
+    // called when a plot is updated
+    event PlotChange(bytes32 indexed location, Plot newPlot);
+
     /**
      * Returns a colony with readable location and id
      * @param colony to wrap
@@ -94,6 +97,7 @@ contract Eykar {
         map[location] = plot;
         bytes32 chunkLocation = CoordinatesLib.getChunk(location);
         if (!chunks[chunkLocation]) chunks[chunkLocation] = true;
+        emit PlotChange(location, plot);
     }
 
     /**
